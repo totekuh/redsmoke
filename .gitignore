@@ -1,2 +1,5 @@
 c2/.terraform
-c2/.terraform.lock.hcl
+c2/.terraform.*
+c2/terraform.tfstate*
+c2/terraform.lock*
+c2/*.pem
