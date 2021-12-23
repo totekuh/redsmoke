@@ -71,18 +71,18 @@ resource "aws_security_group" "redform_security" {
 #########################################
 
 resource "aws_instance" "redform_server" {
-  ami                    = "ami-0b1deee75235aa4bb"
-  instance_type          = "t2.micro"
+  ami                    = var.ami
+  instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.redform_security.id]
   key_name               = aws_key_pair.redform_key_pair.key_name
 
   tags = {
-    Name = "RedFormInstance"
+    Name = var.instance_name
   }
 
   connection {
     type        = "ssh"
-    user        = "ubuntu"
+    user        = var.ssh_user
     private_key = file("${var.redform_key_name}.pem")
     host        = aws_instance.redform_server.public_ip
     timeout     = "1m"
