@@ -3,10 +3,10 @@
 A command-and-control (C2) server manageable via Terraform.
 
 Includes:
-- The free-tier Ubuntu image
+- The free-tier Kali image
 - The free-tier instance type (t2.micro)
-- Pre-configured firewall rules (security groups) for communicating with your instance
-- SSH keys being auto-generated and preconfigured on instance creation
+- Pre-configured firewall rules (security groups) for communicating with your instance via SSH
+- SSH keys being auto-generated and preconfigured per instance creation
 
 
 # Installation
@@ -26,4 +26,10 @@ sudo apt-get update && sudo apt-get install terraform
 
 # Usage
 
-
+```bash
+git clone https://github.com/cyberhexe/redform
+cd redform
+cd c2
+terraform init
+terraform apply
+```
