@@ -90,7 +90,7 @@ resource "aws_instance" "redform_server" {
     user        = var.ssh_user
     private_key = file("${var.redform_key_name}.pem")
     host        = aws_instance.redform_server.public_ip
-    timeout     = "1m"
+    timeout     = "2m"
   }
 
   provisioner "file" {
