@@ -13,7 +13,7 @@ terraform {
 }
 provider "aws" {
   profile = "default"
-  region  = "eu-central-1"
+  region  = var.redform_region
 }
 
 #########################################
@@ -37,6 +37,10 @@ resource "aws_key_pair" "redform_key_pair" {
       chmod 400 ./'${var.redform_key_name}'.pem
     EOT
   }
+  provisioner "local-exec" {
+    when    = destroy
+    command = "rm -rf ./${self.key_name}.pem"
+  }
 }
 
 #########################################
@@ -44,6 +48,7 @@ resource "aws_key_pair" "redform_key_pair" {
 #########################################
 
 resource "aws_security_group" "redform_security" {
+  ### the ssh service exposed to the Internet
   ingress {
     description      = "SSH from everywhere"
     from_port        = 22
@@ -100,8 +105,28 @@ resource "aws_instance" "redform_server" {
   }
 }
 
-output "instance_ip" {
+#########################################
+### EBS VOLUMES/ATTACHMENTS CONFIGURATION
+#########################################
+
+resource "aws_ebs_volume" "redform_ebs" {
+  availability_zone = var.redform_ebs_availability_zone
+  size              = var.redform_ebs_size
+
+  tags = {
+    Name = "Redform Storage"
+  }
+}
+
+resource "aws_volume_attachment" "redform_ebs_attachment" {
+  # attach as the root volume
+  device_name = "/dev/sdh"
+  volume_id   = aws_ebs_volume.redform_ebs.id
+  instance_id = aws_instance.redform_server.id
+}
+
+output "connect_cmd" {
   description = "The public ip for SSH access"
-  value       = aws_instance.redform_server.public_ip
+  value       = "ssh ${var.ssh_user}@${aws_instance.redform_server.public_ip} -i ${var.redform_key_name}.pem"
 }
 

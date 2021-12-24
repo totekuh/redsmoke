@@ -26,10 +26,17 @@ sudo apt-get update && sudo apt-get install terraform
 
 # Usage
 
+### Cloning redform and creating the infrastructure 
 ```bash
 git clone https://github.com/cyberhexe/redform
 cd redform
 cd c2
 terraform init
 terraform apply
+```
+
+### Destroying the infrastructure
+```bash
+cd c2
+terraform destroy
 ```
