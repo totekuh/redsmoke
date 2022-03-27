@@ -48,3 +48,33 @@ variable "ssh_user" {
   default     = "kali"
   description = "The username to use while connecting via SSH for provisioning"
 }
+
+####
+# TCP Proxy Configuration
+####
+variable "microsocks_ip" {
+  type = string
+  default = "0.0.0.0"
+  description = "A TCP port to use when binding a SOCKS proxy"
+}
+
+variable "microsocks_port" {
+  type = number
+  default = 42024
+  description = "A TCP port to use when binding a SOCKS proxy"
+}
+
+####
+# Remote Metasploit Configuration
+####
+variable "msfd_ip" {
+  type = string
+  default = "127.0.0.1"
+  description = "The IP address of the Metasploit daemon"
+}
+
+variable "msfd_port" {
+  type = number
+  default = 1337
+  description = "The TCP port of the Metasploit daemon"
+}

@@ -50,9 +50,17 @@ resource "aws_key_pair" "redform_key_pair" {
 resource "aws_security_group" "redform_security" {
   ### the ssh service exposed to the Internet
   ingress {
-    description      = "SSH from everywhere"
+    description      = "SSH From Everywhere"
     from_port        = 22
     to_port          = 22
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+  ingress {
+    description      = "TCP Proxy From Everywhere"
+    from_port        = 42024
+    to_port          = 42024
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
@@ -67,7 +75,7 @@ resource "aws_security_group" "redform_security" {
   }
 
   tags = {
-    Name = "allow_ssh"
+    Name = "redform_sg"
   }
 }
 
@@ -92,41 +100,36 @@ resource "aws_instance" "redform_server" {
     host        = aws_instance.redform_server.public_ip
     timeout     = "2m"
   }
-
   provisioner "file" {
-    source      = "scripts/install.sh"
-    destination = "/tmp/install.sh"
+    source      = "scripts/1-prepare.sh"
+    destination = "/tmp/1-prepare.sh"
+  }
+  provisioner "file" {
+    source      = "scripts/2-install-proxy-service.sh"
+    destination = "/tmp/2-install-proxy-service.sh"
+  }
+    provisioner "file" {
+    source      = "scripts/3-prepare-metasploit-daemon.sh"
+    destination = "/tmp/3-prepare-metasploit-daemon.sh"
   }
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /tmp/install.sh",
-      "/tmp/install.sh"
+      "/bin/bash /tmp/1-prepare.sh",
+      "/bin/bash /tmp/2-install-proxy-service.sh ${var.microsocks_ip} ${var.microsocks_port}",
+      "/bin/bash /tmp/3-prepare-metasploit-daemon.sh ${var.msfd_ip} ${var.msfd_port}"
     ]
   }
 }
 
-#########################################
-### EBS VOLUMES/ATTACHMENTS CONFIGURATION
-#########################################
-
-resource "aws_ebs_volume" "redform_ebs" {
-  availability_zone = var.redform_ebs_availability_zone
-  size              = var.redform_ebs_size
-
-  tags = {
-    Name = "Redform Storage"
-  }
-}
-
-resource "aws_volume_attachment" "redform_ebs_attachment" {
-  # attach as the root volume
-  device_name = "/dev/sdh"
-  volume_id   = aws_ebs_volume.redform_ebs.id
-  instance_id = aws_instance.redform_server.id
-}
-
 output "connect_cmd" {
   description = "The public ip for SSH access"
-  value       = "ssh ${var.ssh_user}@${aws_instance.redform_server.public_ip} -i ${var.redform_key_name}.pem"
+  value       = "SSH service available: ssh ${var.ssh_user}@${aws_instance.redform_server.public_ip} -i ${var.redform_key_name}.pem"
 }
-
+output "connect_proxy" {
+  description = "The address of the TCP proxy"
+  value       = "SOCKS-5 proxy deployed at ${aws_instance.redform_server.public_ip}:${var.microsocks_port}"
+}
+output "connect_msfd" {
+  description = "The address of the Metasploit daemon"
+  value       = "Metasploit daemon deployed on remote at tcp://${var.msfd_ip}:${var.msfd_port}"
+}
