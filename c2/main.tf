@@ -101,12 +101,12 @@ resource "aws_instance" "redform_server" {
     timeout     = "2m"
   }
   provisioner "file" {
-    source      = "scripts/1-prepare.sh"
-    destination = "/tmp/1-prepare.sh"
+    source      = "scripts/1-initial-setup.sh"
+    destination = "/tmp/1-initial-setup.sh"
   }
   provisioner "file" {
-    source      = "scripts/2-install-proxy-service.sh"
-    destination = "/tmp/2-install-proxy-service.sh"
+    source      = "scripts/2-install-microsocks-service.sh"
+    destination = "/tmp/2-install-microsocks-service.sh"
   }
     provisioner "file" {
     source      = "scripts/3-prepare-metasploit-daemon.sh"
@@ -114,8 +114,8 @@ resource "aws_instance" "redform_server" {
   }
   provisioner "remote-exec" {
     inline = [
-      "/bin/bash /tmp/1-prepare.sh",
-      "/bin/bash /tmp/2-install-proxy-service.sh ${var.microsocks_ip} ${var.microsocks_port}",
+      "/bin/bash /tmp/1-initial-setup.sh",
+      "/bin/bash /tmp/2-install-microsocks-service.sh ${var.microsocks_ip} ${var.microsocks_port}",
       "/bin/bash /tmp/3-prepare-metasploit-daemon.sh ${var.msfd_ip} ${var.msfd_port}"
     ]
   }

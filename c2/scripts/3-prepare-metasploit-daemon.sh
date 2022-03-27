@@ -14,3 +14,5 @@ fi
 
 sudo msfdb init &&
 msfd -a "$MSFD_IP" -p "$MSFD_PORT"
+
+echo "db_status" |ncat "$MSFD_IP" "$MSFD_PORT"
