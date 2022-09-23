@@ -13,6 +13,6 @@ if [ -z "$MSFD_PORT" ]; then
 fi
 
 sudo msfdb init &&
-msfd -a "$MSFD_IP" -p "$MSFD_PORT"
-
+sudo msfd -a "$MSFD_IP" -p "$MSFD_PORT"
+sleep 10
 echo "db_status" |ncat "$MSFD_IP" "$MSFD_PORT"

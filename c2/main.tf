@@ -58,14 +58,21 @@ resource "aws_security_group" "redform_security" {
     ipv6_cidr_blocks = ["::/0"]
   }
   ingress {
-    description      = "TCP Proxy From Everywhere"
-    from_port        = 42024
-    to_port          = 42024
+    description      = "HTTP From Everywhere"
+    from_port        = 80
+    to_port          = 80
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
-
+  ingress {
+    description      = "HTTPS From Everywhere"
+    from_port        = 443
+    to_port          = 443
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
   egress {
     from_port        = 0
     to_port          = 0
@@ -105,18 +112,13 @@ resource "aws_instance" "redform_server" {
     destination = "/tmp/1-initial-setup.sh"
   }
   provisioner "file" {
-    source      = "scripts/2-install-microsocks-service.sh"
-    destination = "/tmp/2-install-microsocks-service.sh"
-  }
-    provisioner "file" {
-    source      = "scripts/3-prepare-metasploit-daemon.sh"
-    destination = "/tmp/3-prepare-metasploit-daemon.sh"
+    source      = "scripts/2-prepare-metasploit-daemon.sh"
+    destination = "/tmp/2-prepare-metasploit-daemon.sh"
   }
   provisioner "remote-exec" {
     inline = [
       "/bin/bash /tmp/1-initial-setup.sh",
-      "/bin/bash /tmp/2-install-microsocks-service.sh ${var.microsocks_ip} ${var.microsocks_port}",
-      "/bin/bash /tmp/3-prepare-metasploit-daemon.sh ${var.msfd_ip} ${var.msfd_port}"
+      "/bin/bash /tmp/2-prepare-metasploit-daemon.sh ${var.msfd_ip} ${var.msfd_port}"
     ]
   }
 }
@@ -124,10 +126,6 @@ resource "aws_instance" "redform_server" {
 output "connect_cmd" {
   description = "The public ip for SSH access"
   value       = "SSH service available: ssh ${var.ssh_user}@${aws_instance.redform_server.public_ip} -i ${var.redform_key_name}.pem"
-}
-output "connect_proxy" {
-  description = "The address of the TCP proxy"
-  value       = "SOCKS-5 proxy deployed at ${aws_instance.redform_server.public_ip}:${var.microsocks_port}"
 }
 output "connect_msfd" {
   description = "The address of the Metasploit daemon"

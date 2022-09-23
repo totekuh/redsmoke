@@ -50,21 +50,6 @@ variable "ssh_user" {
 }
 
 ####
-# TCP Proxy Configuration
-####
-variable "microsocks_ip" {
-  type = string
-  default = "0.0.0.0"
-  description = "A TCP port to use when binding a SOCKS proxy"
-}
-
-variable "microsocks_port" {
-  type = number
-  default = 42024
-  description = "A TCP port to use when binding a SOCKS proxy"
-}
-
-####
 # Remote Metasploit Configuration
 ####
 variable "msfd_ip" {
