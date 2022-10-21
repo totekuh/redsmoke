@@ -1,15 +1,29 @@
-# General Information
+## General Information
 
-A command-and-control (C2) server manageable via Terraform.
+One-button-push infrastructure solutions manageable via Terraform.
 
-Includes:
-- A free-tier Kali image
-- A free-tier instance type (t2.micro)
-- Pre-configured firewall rules (security groups) for communicating with your instance via SSH
-- SSH keys being auto-generated and preconfigured per instance creation
+`redsmoke` consist of terraform scripts for deploying various machines used within an infrastructure you're looking for on a pentest or red team engagement.
+
+`redsmoke` includes the following units:
+
+- `generic-unit`:
+  - A free-tier Kali image
+  - A free-tier instance type (t2.micro)
+  - Pre-configured firewall rules: 
+    - 22/tcp from everywhere
+    - 80/tcp from everywhere
+    - 443/tcp from everywhere
+  - SSH keys auto-generated per instance creation
+
+- `vpn-unit`:
+  - A free-tier Kali image
+  - A free-tier instance type (t2.micro)
+  - Pre-configured firewall rules:
+    - 22/tcp from everywhere
+    - 1194/udp from everywhere
 
 
-# Installation
+## Installation
 
 ### Installing AWS CLI
 ```bash
@@ -24,23 +38,28 @@ sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(l
 sudo apt-get update && sudo apt-get install terraform
 ```
 
-### Cloning redform
+### Cloning redsmoke
 ```bash
-git clone https://github.com/cyberhexe/redform
+git clone https://github.com/cyberhexe/redsmoke
+cd redsmoke
 ```
 
-# Usage
+## Usage
 
 ### Creating the infrastructure 
+
+
+Deploying a generic cloud unit:
+
 ```bash
-cd redform
-cd c2
+cd generic-unit
 terraform init
 terraform apply -auto-approve
 ```
 
-### Destroying the infrastructure
+Destroying a generic cloud unit:
+
 ```bash
-cd c2
+cd generic-unit
 terraform destroy -auto-approve
 ```

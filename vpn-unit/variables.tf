@@ -27,7 +27,7 @@ variable "ami" {
 
 variable "redform_ebs_size" {
   type        = number
-  default     = 25
+  default     = 10
   description = "The storage's size of the EBS volume in GB to be attached to the created EC2 instance"
 }
 
@@ -39,7 +39,7 @@ variable "instance_type" {
 
 variable "instance_name" {
   type = string
-  default = "redform-instance"
+  default = "redform-vpn-unit"
   description = "The EC2 instance name to set"
 }
 
@@ -47,19 +47,4 @@ variable "ssh_user" {
   type        = string
   default     = "kali"
   description = "The username to use while connecting via SSH for provisioning"
-}
-
-####
-# Remote Metasploit Configuration
-####
-variable "msfd_ip" {
-  type = string
-  default = "127.0.0.1"
-  description = "The IP address of the Metasploit daemon"
-}
-
-variable "msfd_port" {
-  type = number
-  default = 1337
-  description = "The TCP port of the Metasploit daemon"
 }
