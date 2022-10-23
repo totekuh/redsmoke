@@ -18,6 +18,7 @@ One-button-push infrastructure solutions manageable via Terraform.
 - `vpn-unit`:
   - A free-tier Kali image
   - A free-tier instance type (t2.micro)
+  - A pre-configured OpenVPN server
   - Pre-configured firewall rules:
     - 22/tcp from everywhere
     - 1194/udp from everywhere
