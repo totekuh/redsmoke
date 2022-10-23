@@ -13,7 +13,7 @@ terraform {
 }
 provider "aws" {
   profile = "default"
-  region  = var.redform_region
+  region  = var.redsmoke_region
 }
 
 #########################################
@@ -22,19 +22,19 @@ provider "aws" {
 
 
 
-resource "tls_private_key" "redform_ssh_key" {
+resource "tls_private_key" "redsmoke_ssh_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-resource "aws_key_pair" "redform_key_pair" {
-  key_name   = var.redform_key_name
-  public_key = tls_private_key.redform_ssh_key.public_key_openssh
+resource "aws_key_pair" "redsmoke_key_pair" {
+  key_name   = var.redsmoke_key_name
+  public_key = tls_private_key.redsmoke_ssh_key.public_key_openssh
 
   provisioner "local-exec" {
     command = <<-EOT
-      echo "${tls_private_key.redform_ssh_key.private_key_pem}" > ./"${var.redform_key_name}".pem
-      chmod 400 ./'${var.redform_key_name}'.pem
+      echo "${tls_private_key.redsmoke_ssh_key.private_key_pem}" > ./"${var.redsmoke_key_name}".pem
+      chmod 400 ./'${var.redsmoke_key_name}'.pem
     EOT
   }
   provisioner "local-exec" {
@@ -47,7 +47,7 @@ resource "aws_key_pair" "redform_key_pair" {
 ### SECURITY GROUPS
 #########################################
 
-resource "aws_security_group" "redform_security" {
+resource "aws_security_group" "redsmoke_security" {
   ingress {
     description      = "SSH From Everywhere"
     from_port        = 22
@@ -74,7 +74,7 @@ resource "aws_security_group" "redform_security" {
 
 
   tags = {
-    Name = "redform_vpn_unit_sg"
+    Name = "redsmoke_vpn_unit_sg"
   }
 }
 
@@ -82,11 +82,11 @@ resource "aws_security_group" "redform_security" {
 ### EC2 CONFIGURATION
 #########################################
 
-resource "aws_instance" "redform_server" {
+resource "aws_instance" "redsmoke_server" {
   ami                    = var.ami
   instance_type          = var.instance_type
-  vpc_security_group_ids = [aws_security_group.redform_security.id]
-  key_name               = aws_key_pair.redform_key_pair.key_name
+  vpc_security_group_ids = [aws_security_group.redsmoke_security.id]
+  key_name               = aws_key_pair.redsmoke_key_pair.key_name
 
   tags = {
     Name = var.instance_name
@@ -95,8 +95,8 @@ resource "aws_instance" "redform_server" {
   connection {
     type        = "ssh"
     user        = var.ssh_user
-    private_key = file("${var.redform_key_name}.pem")
-    host        = aws_instance.redform_server.public_ip
+    private_key = file("${var.redsmoke_key_name}.pem")
+    host        = aws_instance.redsmoke_server.public_ip
     timeout     = "2m"
   }
   provisioner "file" {
@@ -104,22 +104,30 @@ resource "aws_instance" "redform_server" {
     destination = "/tmp/1-initial-setup.sh"
   }
   provisioner "file" {
-    source      = "scripts/2-prepare-metasploit-daemon.sh"
-    destination = "/tmp/2-prepare-metasploit-daemon.sh"
+    source      = "scripts/2-openvpn-install.sh"
+    destination = "/tmp/2-openvpn-install.sh"
+  }
+  provisioner "file" {
+    source      = "scripts/docker-compose.yml"
+    destination = "/tmp/docker-compose.yml"
   }
   provisioner "remote-exec" {
     inline = [
-      "/bin/bash /tmp/1-initial-setup.sh",
-      "/bin/bash /tmp/2-prepare-metasploit-daemon.sh ${var.msfd_ip} ${var.msfd_port}"
+      "/usr/bin/bash /tmp/1-initial-setup.sh",
+      "/usr/bin/sudo /usr/bin/bash /tmp/2-openvpn-install.sh ${var.vpn_user}",
     ]
+  }
+  provisioner "remote-exec" {
+    inline = ["sudo hostnamectl set-hostname vpn-unit"]
   }
 }
 
 output "connect_cmd" {
-  description = "The public ip for SSH access"
-  value       = "SSH service available: ssh ${var.ssh_user}@${aws_instance.redform_server.public_ip} -i ${var.redform_key_name}.pem"
+  description = "The public IP for SSH access"
+  value       = "SSH service available: ssh ${var.ssh_user}@${aws_instance.redsmoke_server.public_ip} -i ${var.redsmoke_key_name}.pem"
 }
-output "connect_msfd" {
-  description = "The address of the Metasploit daemon"
-  value       = "Metasploit daemon deployed on remote at tcp://${var.msfd_ip}:${var.msfd_port}"
+
+output "vpn-create-client" {
+  description = "The public IP for VPN access"
+  value       = "Create a user and connect to the VPN: \nssh ${var.ssh_user}@${aws_instance.redsmoke_server.public_ip} -i ${var.redsmoke_key_name}.pem 'sudo docker exec -i vpn-unit addvpnuser ${var.vpn_user}' && ssh ${var.ssh_user}@${aws_instance.redsmoke_server.public_ip} -i ${var.redsmoke_key_name}.pem 'sudo cat /root/vpn-unit/openvpn/client/${var.vpn_user}.ovpn' > ${var.vpn_user}.ovpn && sudo openvpn --config ${var.vpn_user}.ovpn"
 }

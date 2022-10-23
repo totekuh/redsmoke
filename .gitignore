@@ -1,5 +1,12 @@
-c2/.terraform
-c2/.terraform.*
-c2/terraform.tfstate*
-c2/terraform.lock*
-c2/*.pem
+generic-unit/.terraform
+generic-unit/.terraform.*
+generic-unit/terraform.tfstate*
+generic-unit/terraform.lock*
+generic-unit/*.pem
+
+vpn-unit/.terraform
+vpn-unit/.terraform.*
+vpn-unit/terraform.tfstate*
+vpn-unit/terraform.lock*
+vpn-unit/*.pem
+vpn-unit/*.ovpn

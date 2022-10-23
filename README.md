@@ -49,6 +49,8 @@ cd redsmoke
 ### Creating the infrastructure 
 
 
+#### generic-unit
+
 Deploying a generic cloud unit:
 
 ```bash
@@ -57,9 +59,26 @@ terraform init
 terraform apply -auto-approve
 ```
 
-Destroying a generic cloud unit:
+Terminating a generic cloud unit:
 
 ```bash
 cd generic-unit
+terraform destroy -auto-approve
+```
+
+#### vpn-unit
+
+Deploying a VPN unit:
+
+```bash
+cd vpn-unit
+terraform init
+terraform apply -auto-approve
+```
+
+Terminating a VPN unit:
+
+```bash
+cd vpn-unit
 terraform destroy -auto-approve
 ```

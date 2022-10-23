@@ -1,0 +1,23 @@
+version: '3'
+services:
+  vpn-unit:
+    container_name: vpn-unit
+    hostname: vpn-unit
+    image: sealeo/openvpn
+    restart: always
+    volumes:
+    - ./openvpn:/etc/openvpn
+    - ./cert:/cert
+#    environment:
+    #- CIPHER=cipher AES-256-CBC
+    #- DH_KEY_SIZE=2048
+    #- RSA_KEY_SIZE=2048
+    #- DNS=1
+    #- PROTOCOL=udp
+    #- EXTERNAL_PORT=1194
+    ports:
+    - 1194:1194/udp
+    cap_add:
+    - NET_ADMIN
+    devices:
+    - /dev/net/tun

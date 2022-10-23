@@ -13,6 +13,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt install \
     python3 \
     python3-pip \
     python3-dev \
+    docker.io \
+    docker-compose \
     -y &&
 
 sudo usermod -aG docker kali
@@ -21,7 +23,4 @@ sudo usermod -aG docker kali
 mkdir tools && cd tools &&
 git clone https://github.com/cyberhexe/red-toolkit
 
-pip3 install parrot-feeder
-pip3 install twisted
-
-sudo docker pull cyberhexe/packet-storm
+sudo mkdir /root/vpn-unit

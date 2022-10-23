@@ -13,7 +13,7 @@ terraform {
 }
 provider "aws" {
   profile = "default"
-  region  = var.redform_region
+  region  = var.redsmoke_region
 }
 
 #########################################
@@ -22,19 +22,19 @@ provider "aws" {
 
 
 
-resource "tls_private_key" "redform_ssh_key" {
+resource "tls_private_key" "redsmoke_ssh_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-resource "aws_key_pair" "redform_key_pair" {
-  key_name   = var.redform_key_name
-  public_key = tls_private_key.redform_ssh_key.public_key_openssh
+resource "aws_key_pair" "redsmoke_key_pair" {
+  key_name   = var.redsmoke_key_name
+  public_key = tls_private_key.redsmoke_ssh_key.public_key_openssh
 
   provisioner "local-exec" {
     command = <<-EOT
-      echo "${tls_private_key.redform_ssh_key.private_key_pem}" > ./"${var.redform_key_name}".pem
-      chmod 400 ./'${var.redform_key_name}'.pem
+      echo "${tls_private_key.redsmoke_ssh_key.private_key_pem}" > ./"${var.redsmoke_key_name}".pem
+      chmod 400 ./'${var.redsmoke_key_name}'.pem
     EOT
   }
   provisioner "local-exec" {
@@ -47,7 +47,7 @@ resource "aws_key_pair" "redform_key_pair" {
 ### SECURITY GROUPS
 #########################################
 
-resource "aws_security_group" "redform_security" {
+resource "aws_security_group" "redsmoke_security" {
   ### the ssh service exposed to the Internet
   ingress {
     description      = "SSH From Everywhere"
@@ -74,7 +74,7 @@ resource "aws_security_group" "redform_security" {
     ipv6_cidr_blocks = ["::/0"]
   }
   tags = {
-    Name = "redform_generic_unit_sg"
+    Name = "redsmoke_generic_unit_sg"
   }
 }
 
@@ -82,11 +82,11 @@ resource "aws_security_group" "redform_security" {
 ### EC2 CONFIGURATION
 #########################################
 
-resource "aws_instance" "redform_server" {
+resource "aws_instance" "redsmoke_server" {
   ami                    = var.ami
   instance_type          = var.instance_type
-  vpc_security_group_ids = [aws_security_group.redform_security.id]
-  key_name               = aws_key_pair.redform_key_pair.key_name
+  vpc_security_group_ids = [aws_security_group.redsmoke_security.id]
+  key_name               = aws_key_pair.redsmoke_key_pair.key_name
 
   tags = {
     Name = var.instance_name
@@ -95,8 +95,8 @@ resource "aws_instance" "redform_server" {
   connection {
     type        = "ssh"
     user        = var.ssh_user
-    private_key = file("${var.redform_key_name}.pem")
-    host        = aws_instance.redform_server.public_ip
+    private_key = file("${var.redsmoke_key_name}.pem")
+    host        = aws_instance.redsmoke_server.public_ip
     timeout     = "2m"
   }
   provisioner "file" {
@@ -113,11 +113,14 @@ resource "aws_instance" "redform_server" {
       "/bin/bash /tmp/2-prepare-metasploit-daemon.sh ${var.msfd_ip} ${var.msfd_port}"
     ]
   }
+  provisioner "remote-exec" {
+    inline = ["sudo hostnamectl set-hostname generic-unit"]
+  }
 }
 
 output "connect_cmd" {
   description = "The public ip for SSH access"
-  value       = "SSH service available: ssh ${var.ssh_user}@${aws_instance.redform_server.public_ip} -i ${var.redform_key_name}.pem"
+  value       = "SSH service available: ssh ${var.ssh_user}@${aws_instance.redsmoke_server.public_ip} -i ${var.redsmoke_key_name}.pem"
 }
 output "connect_msfd" {
   description = "The address of the Metasploit daemon"
