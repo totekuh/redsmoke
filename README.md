@@ -33,11 +33,8 @@ aws configure
 ```
 
 ### Installing Terraform (Ubuntu)
-```bash
-curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-sudo apt-get update && sudo apt-get install terraform
-```
+
+- https://developer.hashicorp.com/terraform/downloads
 
 ### Cloning redsmoke
 ```bash
